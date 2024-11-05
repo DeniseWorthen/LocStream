@@ -18,8 +18,9 @@ program testloc
   integer                  :: i,n,nn,iounit,iostat,iaproc
   integer                  :: rc
   integer                  :: elb, eub,ecnt
-  real(kind=4)             :: x(npts),y(npts)
-  real(kind=8), pointer    :: xx(:), yy(:)
+  real(kind=4)             :: x(npts),y(npts),ids(npts)
+  real(kind=8), pointer    :: xx(:), yy(:), buoyid(:)
+  real(kind=8), pointer    :: lsxx(:), lsyy(:), lsid(:)
   integer(kind=4), pointer :: dof(:)
   character(len=20)        :: cvalue
   integer, allocatable     :: gindex(:)
@@ -84,16 +85,18 @@ program testloc
 
   open(newunit=iounit, file='pts.dat', status='old')
   do n = 1,npts
-     read(iounit,*)x(n),y(n)
+     read(iounit,*)x(n),y(n),ids(n)
   end do
   close(iounit)
 
   !use first nsmall locations
   allocate(xx(nsmall))
   allocate(yy(nsmall))
+  allocate(buoyid(nsmall))
   do i = 1,nsmall
      xx(i) = real(x(i),8)
      yy(i) = real(y(i),8)
+     buoyid(i) = real(ids(i),8)
   end do
 
   LS = ESMF_LocStreamCreate(maxIndex=nsmall, indexflag=ESMF_INDEX_GLOBAL, rc=rc)
@@ -114,7 +117,7 @@ program testloc
           datacopyflag=ESMF_DATACOPY_VALUE, keyUnits="Degrees", keyLongName="Longitude", rc=rc)
      if (rc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
-     call ESMF_LocStreamAddKey(LS2, keyName="ESMF:ID", farray=xx(elb:eub), &
+     call ESMF_LocStreamAddKey(LS2, keyName="ESMF:ID", farray=buoyid(elb:eub), &
           datacopyflag=ESMF_DATACOPY_VALUE, keyUnits="1", keyLongName="BuoyID", rc=rc)
      if (rc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
   end if
@@ -126,5 +129,16 @@ program testloc
   call ESMF_LocStreamGetBounds(ptsLS, exclusiveLBound=elb, exclusiveUBound=eub, exclusiveCount=ecnt,rc=rc)
   if (rc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
   print *,'bkgrd: pet=',iaproc,' elb,eub,ecnt= ',elb,eub,ecnt
+
+  call ESMF_LocStreamGetKey(ptsLS, keyName="ESMF:Lat", farray=lsyy, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
+  call ESMF_LocStreamGetKey(ptsLS, keyName="ESMF:Lon", farray=lsxx, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
+  call ESMF_LocStreamGetKey(ptsLS, keyName="ESMF:ID", farray=lsid, rc=rc)
+  if (rc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
+
+  do i = elb,eub
+     print '(2i6,3f12.2)',iaproc,i,lsxx(i),lsyy(i),lsid(i)
+  end do
 
 end program testloc
