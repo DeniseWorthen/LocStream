@@ -1,0 +1,11 @@
+cancel data/all
+set data emesh2.decomp.nc
+!plot/vs if decomp eq 1 then coordx,coordy
+file/var="ii,lon,lat,id,msk" fort.10
+let lon2=if lon lt 0 then lon+360 else lon
+
+plot/d=1/vs/hlim=0:360/vlim=-90:90 if decomp eq 1 then coordx,coordy
+plot/over/vs/i=34/colo=red/sym=20 lon2,lat
+
+!plot/over/d=1/color=blue/vs if decomp eq 2 then coordx,coordy
+!plot/over/vs/i=3:9/colo=green/sym=20 lon2,lat

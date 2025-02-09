@@ -43,10 +43,11 @@ include $(ESMFMKFILE)
 
 
 # -----------------------------------------------------------------------------
-test: testmesh.o wav_shr_mod.o
+test: testloc.o wav_shr_mod.o projectLS.o
 	$(ESMF_F90LINKER) $(ESMF_F90LINKOPTS) $(ESMF_F90LINKPATHS) $(ESMF_F90LINKRPATHS) -o $@ $^ $(ESMF_F90ESMFLINKLIBS)
 
-testmesh.o: wav_shr_mod.o
+testloc.o: wav_shr_mod.o projectLS.o
+projectLS.o: wav_shr_mod.o
 wav_shr_mod.o:
 
 # -----------------------------------------------------------------------------
@@ -55,7 +56,7 @@ wav_shr_mod.o:
 dust:
 	rm -f PET*.ESMF_LogFile *.nc *.stdout
 clean:
-	rm -f testmesh.o *.o *.mod
+	rm -f testloc.o *.o *.mod
 distclean: dust clean
 
 info:
