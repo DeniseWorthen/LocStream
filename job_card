@@ -1,0 +1,21 @@
+#!/bin/sh
+
+#SBATCH -e err
+#SBATCH -o out
+#SBATCH --account=nems
+#SBATCH --qos=debug
+#SBATCH --partition=hercules
+### #SBATCH --ntasks=80
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=80
+#SBATCH --time=30
+#SBATCH --job-name="test"
+#SBATCH --exclusive
+
+set -eux
+
+ulimit -s unlimited
+
+srun --label -n 121 ./test
+
+echo "Model ended:    "
